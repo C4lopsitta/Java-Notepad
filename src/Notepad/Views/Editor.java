@@ -132,8 +132,20 @@ public class Editor extends JFrame implements ActionListener, DocumentListener {
     }
     private void actionSaveAs() {}
     private void actionExit() {
-        if(!isSaved)
-            actionSave();
+        if(!isSaved) {
+            int result = JOptionPane.showOptionDialog(
+                    this,
+                    "Do you want to save " + filename + "?",
+                    "Warning",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    null,
+                    null
+            );
+            if(result == JOptionPane.YES_OPTION) actionSave();
+            if(result == JOptionPane.CANCEL_OPTION) return;
+        }
         System.exit(0);
     }
 
