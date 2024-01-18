@@ -22,7 +22,7 @@ public class Editor extends JFrame implements ActionListener, DocumentListener {
 
     public Editor() {
         setMinimumSize(new Dimension(400, 300));
-        setTitle("Notepad");
+        setFilename("new file");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -91,10 +91,13 @@ public class Editor extends JFrame implements ActionListener, DocumentListener {
     }
 
     //region actions
-    private void actionNew() {}
+    private void actionNew() {
+        if(checkSaved() == 0) return;
+        setFilename("new file");
+        textArea.setText(null);
+    }
     private void actionOpen() {
-
-
+        if(checkSaved() == 0) return;
         JFileChooser chooser = new JFileChooser("~");
         int openResult = chooser.showOpenDialog(this);
         if(openResult != JFileChooser.APPROVE_OPTION) return;
@@ -118,6 +121,19 @@ public class Editor extends JFrame implements ActionListener, DocumentListener {
         }
     }
     private void actionSave() {
+        if(filename == "new file") {
+            actionSaveAs();
+            return;
+        }
+        try {
+            PrintWriter pr = new PrintWriter(new FileOutputStream(filename));
+            pr.print(textArea.getText());
+            isSaved = true;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    private void actionSaveAs() {
         JFileChooser chooser = new JFileChooser("~");
         int result = chooser.showOpenDialog(this);
         if(result != JFileChooser.APPROVE_OPTION) return;
@@ -130,23 +146,9 @@ public class Editor extends JFrame implements ActionListener, DocumentListener {
             ex.printStackTrace();
         }
     }
-    private void actionSaveAs() {}
     private void actionExit() {
-        if(!isSaved) {
-            int result = JOptionPane.showOptionDialog(
-                    this,
-                    "Do you want to save " + filename + "?",
-                    "Warning",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE,
-                    null,
-                    null,
-                    null
-            );
-            if(result == JOptionPane.YES_OPTION) actionSave();
-            if(result == JOptionPane.CANCEL_OPTION) return;
-        }
-        System.exit(0);
+        if(checkSaved() == 1)
+            System.exit(0);
     }
 
     private void actionAbout() {
@@ -167,5 +169,24 @@ public class Editor extends JFrame implements ActionListener, DocumentListener {
     private void setFilename(String file) {
         filename = file;
         setTitle("Notepad - " + file);
+    }
+
+    private int checkSaved() {
+        if(!isSaved) {
+            int result = JOptionPane.showOptionDialog(
+                    this,
+                    "Do you want to save " + filename + "?",
+                    "Warning",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    null,
+                    null
+            );
+            if(result == JOptionPane.YES_OPTION) actionSave();
+            if(result == JOptionPane.CANCEL_OPTION) return 0;
+            else return 1;
+        }
+        return 0;
     }
 }
